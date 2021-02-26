@@ -24,15 +24,13 @@ static ssize_t proc_read(struct file*, char __user*, size_t, loff_t*);
 static void read(char *buf, int * const length);
 
 static const char d_name[] = "var4";
-static const char d_greeting[] = "[VAR4]: ";
+static const char d_prefix[] = "[VAR4]: ";
 static struct proc_dir_entry* entry;
 static int values[MAX_VALUES];
 static int values_idx;
 static dev_t d_number;
 static struct cdev c_dev; 
 static struct class *cl;
-static int dev_major;
-static int dev_minor;
 
 static struct file_operations fops =
 {
@@ -62,13 +60,10 @@ static int dev_close(struct inode *i, struct file *f)
 static ssize_t dev_write(struct file *f, const char __user *ubuf,  size_t len, loff_t *off)
 {
 	char buf[BUFSIZE];
-
 	if (*off > 0 || len > BUFSIZE)
 		return -EFAULT;
-
 	if (copy_from_user(buf, ubuf, len))
 		return -EFAULT;
-
 	int i;
 	int num = 0;
 	for (i = 0; i < len; i++)
@@ -77,12 +72,9 @@ static ssize_t dev_write(struct file *f, const char __user *ubuf,  size_t len, l
         if (ch==' ')
 			num++;
 	}
-
 	if (values_idx >= MAX_VALUES)
 		return -EFAULT; 
-
 	values[values_idx++] = num;
-
 	int str_len = strlen(buf);
 	*off = str_len;
 	return str_len;
@@ -90,32 +82,29 @@ static ssize_t dev_write(struct file *f, const char __user *ubuf,  size_t len, l
 
 static ssize_t dev_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
-	char str[MAX_VALUES * sizeof(int) + sizeof(d_greeting)];
+	char str[BUFSIZE * sizeof(int) + sizeof(d_prefix)];
 	int length;
 	read(str, &length);
 
-	printk(KERN_INFO "[VAR4 %d %d]: %s", dev_major, dev_minor, str);
+	printk(KERN_INFO "[VAR4]: %s", str);
 	return 0;
 }
 
 static ssize_t proc_read(struct file *f, char __user *buf,  size_t len, loff_t *off) 
 {
-	char str[MAX_VALUES * sizeof(int) + sizeof(d_greeting)];
+	char str[BUFSIZE * sizeof(int) + sizeof(d_prefix)];
 	int length;
 	read(str, &length);
-
 	if (*off > 0 || len < length)
 	{
-		printk(KERN_INFO "[VAR4(%d %d)]: FAILED to read proc file: invalid offset", dev_major, dev_minor);
+		printk(KERN_INFO "[VAR4]: ERROR during read proc file: invalid offset");
 		return 0;
 	}
-
 	if (copy_to_user(buf, str, length) != 0)
 	{
-		printk(KERN_INFO "[VAR4 (%d %d)]: FAILED to read proc file: failed copy to user buffer", dev_major, dev_minor);
+		printk(KERN_INFO "[VAR4]: ERROR during read proc file: failed copy to user buffer");
 		return -EFAULT;
 	}
-
 	*off = length;
 	return length;
 }
@@ -123,8 +112,7 @@ static ssize_t proc_read(struct file *f, char __user *buf,  size_t len, loff_t *
 static void read(char *buf, int * const length)
 {
 	char *str_ptr = buf;
-	str_ptr += sprintf(buf, d_greeting);
-
+	str_ptr += sprintf(buf, d_prefix);
 	int i;
 	for (i = 0; i < values_idx; i++)
 	{
@@ -132,7 +120,6 @@ static void read(char *buf, int * const length)
 	}
 	*(str_ptr++) = '\n';
 	*(str_ptr++) = '\0';
-
 	*length = str_ptr - buf;
 }
 
@@ -147,35 +134,24 @@ static int __init init(void)
 {
     if (alloc_chrdev_region(&d_number, 0, 1, d_name) != 0)
 		return -EFAULT;
-
     if ((cl = class_create(THIS_MODULE, d_name)) == NULL)
 		goto dev_region_destroy;
-
 	cl->devnode = set_devnode;
-
     if (device_create(cl, NULL, d_number, NULL, d_name) == NULL)
 		goto class_destroy;
-
     cdev_init(&c_dev, &dops);
-
     if (cdev_add(&c_dev, d_number, 1) < 0)
 		goto dev_destroy;
-	
-	if ((entry = proc_create(d_name, 0444, NULL, &fops)) == NULL)
+	if ((entry = proc_create(d_name, 0777, NULL, &fops)) == NULL)
 		goto dev_destroy;
-
-	dev_major = MAJOR(d_number);
-	dev_minor = MINOR(d_number);
-
-	printk(KERN_INFO "[VAR4(%d %d)]: initialized\n", dev_major, dev_minor);
+	printk(KERN_INFO "[VAR4(%d %d)]: initialized\n");
 	return 0;
-
-dev_destroy:
-	device_destroy(cl, d_number);
-class_destroy:
-	class_destroy(cl);
-dev_region_destroy:
-	unregister_chrdev_region(d_number, 1);
+    dev_destroy:
+	    device_destroy(cl, d_number);
+    class_destroy:
+	    class_destroy(cl);
+    dev_region_destroy:
+	    unregister_chrdev_region(d_number, 1);
 	return -EFAULT;
 }
  
@@ -186,7 +162,7 @@ static void __exit exit(void)
 	class_destroy(cl);
 	unregister_chrdev_region(d_number, 1);
 	proc_remove(entry);
-	printk(KERN_INFO "[VAR4 (%d %d)]: exit\n", dev_major, dev_minor);
+	printk(KERN_INFO "[VAR4]: exit\n");
 }
 
 module_init(init);
