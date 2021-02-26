@@ -35,7 +35,7 @@ sudo insmod lab1.ko
 
 dmesg
 
-Должно появиться "[VAR4]:initialized"
+Должно появиться "\[VAR4\]:initialized"
 
 ### Проверяем права символьного устройства
 
@@ -51,7 +51,7 @@ echo "\<Message\>" > /dev/var4 && cat/proc/var4
 
 sudo rmmod lab1
 
-(dmesg должен показать "[VAR4]:exit")
+(dmesg должен показать "\[VAR4\]:exit")
 
 ###**Иногда, если все не работает имеет смысл перезагрузить модуль!**
 
@@ -73,7 +73,7 @@ mint@mint:\~/Desktop/sysio/lab1$ dmesg
 
 \<...\>
 
-[ 3157.090053] [VAR4]: initialized
+\[ 3157.090053\] \[VAR4\]: initialized
 
 mint@mint:\~/Desktop/sysio/lab1$ ls -la /dev/var4
 
@@ -81,7 +81,7 @@ crw-rw-rw- 1 root root 243, 0 Feb 26 09:29 /dev/var4
 
 mint@mint:\~/Desktop/sysio/lab1$ echo "h i hel lo" > /dev/var4 && cat /proc/var4
 
-[VAR4]: 3 
+\[VAR4\]: 3 
 
 mint@mint:\~/Desktop/sysio/lab1$ sudo rmmod lab1
 
@@ -89,4 +89,4 @@ mint@mint:\~/Desktop/sysio/lab1$ dmesg
 
 \<...\>
 
-[ 3615.716860] [VAR4]: exit
+\[ 3615.716860\] \[VAR4\]: exit
