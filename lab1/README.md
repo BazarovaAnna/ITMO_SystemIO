@@ -49,6 +49,8 @@ echo "<Message>" > /dev/lab1 && cat/proc/lab1
 
 sudo rmmod lab1
 
+(dmesg должен показать "[VAR4]:exit")
+
 ## Примеры использования
 
 
