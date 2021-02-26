@@ -57,20 +57,36 @@ sudo rmmod lab1
 
 ## Примеры использования
 
-mint@mint:~/Desktop/sysio$ cd lab1
-mint@mint:~/Desktop/sysio/lab1$ make
-mint@mint:~/Desktop/sysio/lab1$ ls
+mint@mint:\~/Desktop/sysio$ cd lab1
+
+mint@mint:\~/Desktop/sysio/lab1$ make
+
+mint@mint:\~/Desktop/sysio/lab1$ ls
+
 Makefile        README.md  lab1.ko     lab1.mod.o  modules.order
+
 Module.symvers  lab1.c     lab1.mod.c  lab1.o
-mint@mint:~/Desktop/sysio/lab1$ sudo insmod lab1.ko
-mint@mint:~/Desktop/sysio/lab1$ dmesg
+
+mint@mint:\~/Desktop/sysio/lab1$ sudo insmod lab1.ko
+
+mint@mint:\~/Desktop/sysio/lab1$ dmesg
+
 \<...\>
+
 [ 3157.090053] [VAR4]: initialized
-mint@mint:~/Desktop/sysio/lab1$ ls -la /dev/var4
+
+mint@mint:\~/Desktop/sysio/lab1$ ls -la /dev/var4
+
 crw-rw-rw- 1 root root 243, 0 Feb 26 09:29 /dev/var4
-mint@mint:~/Desktop/sysio/lab1$ echo "h i hel lo" > /dev/var4 && cat /proc/var4
+
+mint@mint:\~/Desktop/sysio/lab1$ echo "h i hel lo" > /dev/var4 && cat /proc/var4
+
 [VAR4]: 3 
-mint@mint:~/Desktop/sysio/lab1$ sudo rmmod lab1
-mint@mint:~/Desktop/sysio/lab1$ dmesg
+
+mint@mint:\~/Desktop/sysio/lab1$ sudo rmmod lab1
+
+mint@mint:\~/Desktop/sysio/lab1$ dmesg
+
 \<...\>
+
 [ 3615.716860] [VAR4]: exit
