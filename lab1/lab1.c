@@ -76,7 +76,7 @@ static ssize_t dev_write(struct file *f, const char __user *ubuf,  size_t len, l
 		return -EFAULT; 
 	values[values_idx++] = num;
 	int str_len = strlen(buf);
-	*off = str_len;
+	*off += str_len;
 	return str_len;
 }
 
@@ -105,7 +105,7 @@ static ssize_t proc_read(struct file *f, char __user *buf,  size_t len, loff_t *
 		printk(KERN_INFO "[VAR4]: ERROR during read proc file: failed copy to user buffer");
 		return -EFAULT;
 	}
-	*off = length;
+	*off += length;
 	return length;
 }
 
