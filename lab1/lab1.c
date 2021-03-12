@@ -26,8 +26,9 @@ static void read(char *buf, int * const length);
 static const char d_name[] = "var4";
 static const char d_prefix[] = "[VAR4]: ";
 static struct proc_dir_entry* entry;
-static int values[MAX_VALUES];
-static int values_idx;
+//static int values[MAX_VALUES];
+//static int values_idx;
+static int values;//dop
 static dev_t d_number;
 static struct cdev c_dev; 
 static struct class *cl;
@@ -72,9 +73,10 @@ static ssize_t dev_write(struct file *f, const char __user *ubuf,  size_t len, l
         if (ch==' ')
 			num++;
 	}
-	if (values_idx >= MAX_VALUES)
-		return -EFAULT; 
-	values[values_idx++] = num;
+	//if (values_idx >= MAX_VALUES)
+		//return -EFAULT; 
+	//values[values_idx++] = num;
+    values = num+values;//dop
 	int str_len = strlen(buf);
 	*off += str_len;
 	return str_len;
@@ -114,10 +116,11 @@ static void read(char *buf, int * const length)
 	char *str_ptr = buf;
 	str_ptr += sprintf(buf, d_prefix);
 	int i;
-	for (i = 0; i < values_idx; i++)
-	{
-		str_ptr += sprintf(str_ptr, "%d ", values[i]);
-	}
+	//for (i = 0; i < values_idx; i++)
+	//{
+		//str_ptr += sprintf(str_ptr, "%d ", values[i]);
+	//}
+    str_ptr += sprintf(str_ptr, "%d ", values);//dop
 	*(str_ptr++) = '\n';
 	*(str_ptr++) = '\0';
 	*length = str_ptr - buf;
