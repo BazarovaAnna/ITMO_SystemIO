@@ -69,16 +69,16 @@ static PartTable def_part_table =
 		sec_in_part: 0x4FFF // 10Mbyte
 	},
     {
-		boot_type: 0x00,
-		start_sec: 0x2,
-		start_head: 0x0,
+        boot_type: 0x00,
+		start_head: 0x4,
+		start_sec: 0x1,
 		start_cyl: 0x0,
-		part_type: 0x83,
-		end_head: 0x3,
+		part_type: 0x05, // extended partition type
 		end_sec: 0x20,
+		end_head: 0xB,
 		end_cyl: 0x9F,
 		abs_start_sec: 0x5000,
-		sec_in_part: 0xC800 // 25Mbyte
+        sec_in_part: 0xC800// 25Mbyte
 	},
     {
 		boot_type: 0x00,
@@ -93,9 +93,60 @@ static PartTable def_part_table =
 		sec_in_part: 0x7800 // 15Mbyte
 	}
 };
-static unsigned int def_log_part_br_abs_start_sector[] = {0x0, 0x0};
+static unsigned int def_log_part_br_abs_start_sector[] = {0x5000, 0xC800};
 static const PartTable def_log_part_table[] =
 {
+	//{
+		/*{
+			boot_type: 0x00,
+			start_head: 0x8,
+			start_sec: 0x03,
+			start_cyl: 0x00,
+			part_type: 0x83,
+			end_head: 0xB,
+			end_sec: 0x20,
+			end_cyl: 0x9F,
+			abs_start_sec: 0x1,
+			sec_in_part: 0x4FFF
+		},*/ //udalilos norm
+       /*{
+			boot_type: 0x00,
+			start_head: 0x8,
+			start_sec: 0x03,
+			start_cyl: 0x00,
+			part_type: 0x83,
+			end_head: 0xB,
+			end_sec: 0x20,
+			end_cyl: 0x9F,
+			abs_start_sec: 0x5000,
+			sec_in_part: 0xC800
+		},*/
+     {
+		{
+			boot_type: 0x00,
+			start_head: 0x4,
+			start_sec: 0x2, 
+			start_cyl: 0x0, 
+			part_type: 0x83,
+			end_head: 0x7,
+			end_sec: 0x20,
+			end_cyl: 0x9F,
+			abs_start_sec: 0x1,
+			sec_in_part: 0x77FF
+		},
+		{
+			boot_type: 0x00,
+			start_head: 0x8,
+			start_sec: 0x01,
+			start_cyl: 0x00,
+			part_type: 0x05,
+			end_head: 0xB,
+			end_sec: 0x20,
+			end_cyl: 0x9F,
+			abs_start_sec: 0x7800,
+			sec_in_part: 0x7800
+		}
+	},
 	{
 		{
 			boot_type: 0x00,
@@ -108,20 +159,10 @@ static const PartTable def_log_part_table[] =
 			end_cyl: 0x9F,
 			abs_start_sec: 0x1,
 			sec_in_part: 0x4FFF
-		},
-        {
-			boot_type: 0x00,
-			start_head: 0x8,
-			start_sec: 0x03,
-			start_cyl: 0x00,
-			part_type: 0x83,
-			end_head: 0xB,
-			end_sec: 0x20,
-			end_cyl: 0x9F,
-			abs_start_sec: 0x5000,
-			sec_in_part: 0xC800
-		},
-         {
+		}
+     }
+    //lj c.lf
+         /*{
 			boot_type: 0x00,
 			start_head: 0x8,
 			start_sec: 0x03,
@@ -132,8 +173,8 @@ static const PartTable def_log_part_table[] =
 			end_cyl: 0x9F,
 			abs_start_sec: 0x11800,
 			sec_in_part: 0x7800
-		}
-	}
+		}*/
+	  //}
 };
 static void copy_mbr(u8 *disk)
 {
@@ -315,5 +356,5 @@ void __exit mydiskdrive_exit(void)
 module_init(mydiskdrive_init);
 module_exit(mydiskdrive_exit);
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Rybakov&&Bazarova");
-MODULE_DESCRIPTION("BLAVER");
+MODULE_AUTHOR("Author");
+MODULE_DESCRIPTION("BLOCK DRIVER");
