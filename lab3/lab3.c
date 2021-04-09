@@ -1,3 +1,6 @@
+
+
+
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/netdevice.h>
@@ -8,6 +11,13 @@
 #include <linux/ip.h>
 #include <linux/udp.h>
 
+#include <linux/kernel.h> 
+#include <linux/fs.h>
+#include <linux/uaccess.h>        
+#include <linux/device.h>
+#include <linux/cdev.h>
+#include <linux/proc_fs.h>
+
 static char* link = "enp0s3";
 module_param(link, charp, 0);
 
@@ -17,6 +27,14 @@ static unsigned char data[1500];
 static struct net_device_stats stats;
 
 static struct net_device *child = NULL;
+
+static long target_dest = htonl(0xA9FE6E46);
+
+static struct proc_dir_entry* entry;
+
+static long packets = 0;
+static long total_data = 0;
+
 struct priv {
     struct net_device *parent;
 };
@@ -51,15 +69,17 @@ static char check_frame(struct sk_buff *skb, unsigned char data_shift) {
 }
 
 static rx_handler_result_t handle_frame(struct sk_buff **pskb) {
-   // if (child) {
-        
+    if (child) {
+
         	if (check_frame(*pskb, 0)) {
                 stats.rx_packets++;
                 stats.rx_bytes += (*pskb)->len;
+                packets++;
+                total_data += (*pskb)->len;
             }
         (*pskb)->dev = child;
         return RX_HANDLER_ANOTHER;
-    //}   
+    }   
     return RX_HANDLER_PASS; 
 } 
 
@@ -79,8 +99,8 @@ static netdev_tx_t start_xmit(struct sk_buff *skb, struct net_device *dev) {
     struct priv *priv = netdev_priv(dev);
 
     if (check_frame(skb, 14)) {
-        stats.tx_packets++;
-        stats.tx_bytes += skb->len;
+                packets++;
+                total_data += skb->len;
     }
 
     if (priv->parent) {
@@ -109,10 +129,38 @@ static void setup(struct net_device *dev) {
     memset(netdev_priv(dev), 0, sizeof(struct priv));
     dev->netdev_ops = &crypto_net_device_ops;
 
-    //fill in the MAC address with a phoney
     for (i = 0; i < ETH_ALEN; i++)
         dev->dev_addr[i] = (char)i;
 } 
+
+static ssize_t proc_write(struct file *file, const char __user * ubuf, size_t count, loff_t* ppos) 
+{
+	printk(KERN_DEBUG "Attempt to write proc file");
+	return -1;
+}
+
+static ssize_t proc_read(struct file *file, char __user * ubuf, size_t count, loff_t* ppos) 
+{
+	char string[200];
+	size_t len = sprintf(string, "Total packets: %d, total bytes of data: %d\n", /*stats.tx_packets, stats.tx_bytes*/ packets, total_data);
+	if (*ppos > 0 || count < len)
+	{
+		return 0;
+	}
+	if (copy_to_user(ubuf, string, len) != 0)
+	{
+		return -EFAULT;
+	}
+	*ppos = len;
+	return len;
+}
+
+static struct file_operations fops = {
+	.owner = THIS_MODULE,
+	.read = proc_read,
+	.write = proc_write,
+};
+
 
 int __init vni_init(void) {
     int err = 0;
@@ -148,6 +196,12 @@ int __init vni_init(void) {
     rtnl_lock();
     netdev_rx_handler_register(priv->parent, &handle_frame, NULL);
     rtnl_unlock();
+	
+    stats.tx_packets = 0;
+    stats.tx_bytes = 0;
+
+	entry = proc_create("var4", 0444, NULL, &fops);
+	
     printk(KERN_INFO "Module %s loaded", THIS_MODULE->name);
     printk(KERN_INFO "%s: create link %s", THIS_MODULE->name, child->name);
     printk(KERN_INFO "%s: registered rx handler for %s", THIS_MODULE->name, priv->parent->name);
@@ -164,6 +218,9 @@ void __exit vni_exit(void) {
     }
     unregister_netdev(child);
     free_netdev(child);
+	
+	proc_remove(entry);
+	
     printk(KERN_INFO "Module %s unloaded", THIS_MODULE->name); 
 } 
 
