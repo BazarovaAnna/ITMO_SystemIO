@@ -43,4 +43,6 @@ $ cat /proc/var4
 
 ## Примеры использования
 
-...
+$echo "yandex" | nc -u 8.8.8.8 2222
+
+dmesg
